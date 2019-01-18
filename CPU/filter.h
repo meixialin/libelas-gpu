@@ -22,8 +22,7 @@ Street, Fifth Floor, Boston, MA 02110-1301, USA
 #ifndef __FILTER_H__
 #define __FILTER_H__
 
-#include <emmintrin.h>
-#include <pmmintrin.h>
+#include "/home/nvidia/elas_ws/src/cyphy-elas-ros/sse_to_neon.hpp"
 
 // define fixed-width datatypes for Visual Studio projects
 #ifndef _MSC_VER

@@ -24,15 +24,12 @@ Street, Fifth Floor, Boston, MA 02110-1301, USA
 #ifndef __ELAS_H__
 #define __ELAS_H__
 
-// Enable profiling
-#define PROFILE
-
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <vector>
-#include <emmintrin.h>
+#include "/home/nvidia/elas_ws/src/cyphy-elas-ros/sse_to_neon.hpp"
 
 // define fixed-width datatypes for Visual Studio projects
 #ifndef _MSC_VER
@@ -164,10 +161,7 @@ public:
   //               otherwise width/2 x height/2 (rounded towards zero)
   void process (uint8_t* I1,uint8_t* I2,float* D1,float* D2,const int32_t* dims);
   
-// This was originally "private"
-// Was converted to allow sub-classes to call this
-// This assumes the user knows what they are doing
-public:
+private:
   
   struct support_pt {
     int32_t u;
@@ -192,17 +186,17 @@ public:
   }
 
   // support point functions
-  virtual void removeInconsistentSupportPoints (int16_t* D_can,int32_t D_can_width,int32_t D_can_height);
-  virtual void removeRedundantSupportPoints (int16_t* D_can,int32_t D_can_width,int32_t D_can_height,
+  void removeInconsistentSupportPoints (int16_t* D_can,int32_t D_can_width,int32_t D_can_height);
+  void removeRedundantSupportPoints (int16_t* D_can,int32_t D_can_width,int32_t D_can_height,
                                      int32_t redun_max_dist, int32_t redun_threshold, bool vertical);
-  virtual void addCornerSupportPoints (std::vector<support_pt> &p_support);
+  void addCornerSupportPoints (std::vector<support_pt> &p_support);
   inline int16_t computeMatchingDisparity (const int32_t &u,const int32_t &v,uint8_t* I1_desc,uint8_t* I2_desc,const bool &right_image);
-  virtual std::vector<support_pt> computeSupportMatches (uint8_t* I1_desc,uint8_t* I2_desc);
+  std::vector<support_pt> computeSupportMatches (uint8_t* I1_desc,uint8_t* I2_desc);
 
   // triangulation & grid
-  virtual std::vector<triangle> computeDelaunayTriangulation (std::vector<support_pt> p_support,int32_t right_image);
-  virtual void computeDisparityPlanes (std::vector<support_pt> p_support,std::vector<triangle> &tri,int32_t right_image);
-  virtual void createGrid (std::vector<support_pt> p_support,int32_t* disparity_grid,int32_t* grid_dims,bool right_image);
+  std::vector<triangle> computeDelaunayTriangulation (std::vector<support_pt> p_support,int32_t right_image);
+  void computeDisparityPlanes (std::vector<support_pt> p_support,std::vector<triangle> &tri,int32_t right_image);
+  void createGrid (std::vector<support_pt> p_support,int32_t* disparity_grid,int32_t* grid_dims,bool right_image);
 
   // matching
   inline void updatePosteriorMinimum (__m128i* I2_block_addr,const int32_t &d,const int32_t &w,
@@ -212,19 +206,19 @@ public:
   inline void findMatch (int32_t &u,int32_t &v,float &plane_a,float &plane_b,float &plane_c,
                          int32_t* disparity_grid,int32_t *grid_dims,uint8_t* I1_desc,uint8_t* I2_desc,
                          int32_t *P,int32_t &plane_radius,bool &valid,bool &right_image,float* D);
-  virtual void computeDisparity (std::vector<support_pt> p_support,std::vector<triangle> tri,int32_t* disparity_grid,int32_t* grid_dims,
+  void computeDisparity (std::vector<support_pt> p_support,std::vector<triangle> tri,int32_t* disparity_grid,int32_t* grid_dims,
                          uint8_t* I1_desc,uint8_t* I2_desc,bool right_image,float* D);
 
   // L/R consistency check
-  virtual void leftRightConsistencyCheck (float* D1,float* D2);
+  void leftRightConsistencyCheck (float* D1,float* D2);
   
   // postprocessing
-  virtual void removeSmallSegments (float* D);
-  virtual void gapInterpolation (float* D);
+  void removeSmallSegments (float* D);
+  void gapInterpolation (float* D);
 
   // optional postprocessing
-  virtual void adaptiveMean (float* D);
-  virtual void median (float* D);
+  void adaptiveMean (float* D);
+  void median (float* D);
   
   // parameter set
   parameters param;

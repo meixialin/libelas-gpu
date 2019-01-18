@@ -21,7 +21,7 @@ Street, Fifth Floor, Boston, MA 02110-1301, USA
 
 #include "descriptor.h"
 #include "filter.h"
-#include <emmintrin.h>
+#include "/home/nvidia/elas_ws/src/cyphy-elas-ros/sse_to_neon.hpp"
 
 using namespace std;
 
@@ -29,9 +29,7 @@ Descriptor::Descriptor(uint8_t* I,int32_t width,int32_t height,int32_t bpl,bool 
   I_desc        = (uint8_t*)_mm_malloc(16*width*height*sizeof(uint8_t),16);
   uint8_t* I_du = (uint8_t*)_mm_malloc(bpl*height*sizeof(uint8_t),16);
   uint8_t* I_dv = (uint8_t*)_mm_malloc(bpl*height*sizeof(uint8_t),16);
-  //Filter call so sobel filter to get lines better
   filter::sobel3x3(I,I_du,I_dv,bpl,height);
-  //Create 16 byte discriptors for each deep image pixel
   createDescriptor(I_du,I_dv,width,height,bpl,half_resolution);
   _mm_free(I_du);
   _mm_free(I_dv);
@@ -52,27 +50,12 @@ void Descriptor::createDescriptor (uint8_t* I_du,uint8_t* I_dv,int32_t width,int
     // create filter strip
     for (int32_t v=4; v<height-3; v+=2) {
 
-      addr_v2 = v*bpl; //Current line
-      addr_v0 = addr_v2-2*bpl; //2 lines above
-      addr_v1 = addr_v2-1*bpl; //1 lines above
-      addr_v3 = addr_v2+1*bpl; //1 lines below
-      addr_v4 = addr_v2+2*bpl; //2 lines below
+      addr_v2 = v*bpl;
+      addr_v0 = addr_v2-2*bpl;
+      addr_v1 = addr_v2-1*bpl;
+      addr_v3 = addr_v2+1*bpl;
+      addr_v4 = addr_v2+2*bpl;
 
-      //Save the surrounding filtered rhombus point of interests (Total of 16 points)
-      //Du is horizontal filter result
-      //Dv is vertical filter result (more horizontal change in stero camera so we can use less vertical stuff)
-      //du :
-      // - - x - -
-      // - x x x -
-      // x x o x x
-      // - x x x -
-      // - - x - -
-      //dv :
-      // - - - - -
-      // - - x - -
-      // - x o x -
-      // - - x - -
-      // - - - - -
       for (int32_t u=3; u<width-3; u++) {
         I_desc_curr = I_desc+(v*width+u)*16;
         *(I_desc_curr++) = *(I_du+addr_v0+u+0);
